@@ -8,6 +8,7 @@ public interface PathConstant {
 
 	static String INPUT = rbBundle.getString("INPUT").trim();
 	static String OUTPUT = rbBundle.getString("OUTPUT").trim();
+	static int Row = Integer.parseInt(rbBundle.getString("Row").trim());
 
 	static String SUCCESS = rbBundle.getString("SUCCESS").trim();
 

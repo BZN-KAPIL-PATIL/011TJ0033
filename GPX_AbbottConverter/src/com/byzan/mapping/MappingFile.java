@@ -17,7 +17,7 @@ public class MappingFile implements PathConstant {
 
         try {
         	SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy");
-            for (int i = 0; i < filedata.size(); i++) {
+            for (int i = Row; i < filedata.size(); i++) {
                 ArrayList<String> singleMappedData = new ArrayList<>();
                 ArrayList<String> rowData = filedata.get(i);
 
@@ -31,13 +31,22 @@ public class MappingFile implements PathConstant {
                 position = Integer.parseInt(validationFileData.get(2).get(5));
                 singleMappedData.add(rowData.get(position));
 
-                // 03 Document Number
-                position = Integer.parseInt(validationFileData.get(3).get(5));
-                singleMappedData.add(rowData.get(position));
+             // 03 Document Number Logic Based on Sign
+                String signValue = rowData.get(10).trim();
+                String documentNumber = "";
+
+                if (signValue.equals("-")) {
+                    documentNumber = rowData.get(6);   // sign "-" → index 6
+                } else if (signValue.equals("+")) {
+                    documentNumber = rowData.get(18);  // sign "+" → index 18
+                }
+
+                singleMappedData.add(documentNumber);
+
 
                 // --------------------- 04 Document Type Logic ---------------------
-                String sign = rowData.get(9).trim(); // "+" or "-"
-                String dockType = rowData.get(11).trim();
+                String sign = rowData.get(10).trim(); // "+" or "-"  comes at 10 position in csv
+                String dockType = rowData.get(15).trim();           //comes at 15 position in csv
                 String docPrefix = dockType.split(" - ")[0].trim();
 
                 String mappedType = "";
@@ -102,10 +111,52 @@ public class MappingFile implements PathConstant {
                 }
 
                 singleMappedData.add(mappedType);
+                
+             // --------------------- 05 & 06 Document Date + Due Date ---------------------
+                Date docDate = null;
+                Date dueDate = null;
+                SimpleDateFormat sdf = new SimpleDateFormat(InputFileDateFormat);
+
+                // -------- Document Date --------
+                try {
+                    int dateIndex = Integer.parseInt(validationFileData.get(5).get(5));
+                    String docDateStr = rowData.get(dateIndex);
+
+                    if (docDateStr != null && !docDateStr.trim().isEmpty()) {
+                        docDate = sdf.parse(docDateStr);
+                    }
+                } catch (Exception e) {
+                    MyLogger.error("Error parsing Document Date: " + e.getMessage());
+                }
+
+                // -------- Due Date --------
+                try {
+                    int dueDateIndex = Integer.parseInt(validationFileData.get(6).get(5));
+                    String dueDateStr = rowData.get(dueDateIndex);
+
+                    if (dueDateStr != null && !dueDateStr.trim().isEmpty()) {
+                        dueDate = sdf.parse(dueDateStr);
+                    }
+                } catch (Exception e) {
+                    MyLogger.error("Error parsing Due Date: " + e.getMessage());
+                }
+
+                // -------- CORE LOGIC --------
+                // If Due Date < Document Date → Due Date = Document Date
+                if (docDate != null && dueDate != null && dueDate.before(docDate)) {
+                    //MyLogger.info("Due Date is earlier than Document Date. Setting Due Date = Document Date");
+                    dueDate = docDate;
+                }
+
+                // -------- Add to output (null-safe) --------
+                singleMappedData.add(docDate != null ? df.format(docDate) : "");
+                singleMappedData.add(dueDate != null ? df.format(dueDate) : "");
+
+                
                 // ---------------------------------------------------------------
 
                 // --------------------- 05 Document Date ---------------------
-                try {
+            /*    try {
                     int dateIndex = Integer.parseInt(validationFileData.get(5).get(5));
                     Date date1 = new SimpleDateFormat(InputFileDateFormat).parse(rowData.get(dateIndex));
                     singleMappedData.add(df.format(date1));
@@ -122,7 +173,7 @@ public class MappingFile implements PathConstant {
                 } catch (Exception e) {
                     MyLogger.error("Error parsing Due Date: " + e.getMessage());
                     singleMappedData.add("");
-                }
+                }*/
 
 
                 // 07 Total Amount
@@ -161,7 +212,7 @@ public class MappingFile implements PathConstant {
                 singleMappedData.add("");
 
                 // 17 ReferenceNumber1 (extract prefix)
-                String dockType1 = rowData.get(11);
+                String dockType1 = rowData.get(15);
                 String refNumber1 = dockType1.split(" - ")[0].trim();
                 singleMappedData.add(refNumber1);
 

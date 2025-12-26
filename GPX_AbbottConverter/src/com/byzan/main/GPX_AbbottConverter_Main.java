@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import com.byzan.mapping.MappingFile;
-import com.byzan.reading.ReadExcelFile;
+import com.byzan.reading.ReadCSVFile;
 import com.byzan.reading.ValidationFileReading;
 import com.byzan.utility.MyLogger;
 import com.byzan.utility.PathConstant;
@@ -48,9 +48,9 @@ public class GPX_AbbottConverter_Main implements PathConstant {
 				for (File inputFile : files) {
 					if (!inputFile.isDirectory()) {
 						MyLogger.info("Started reading input file " + inputFile.getName());
-						ReadExcelFile r = new ReadExcelFile();
+						ReadCSVFile r = new ReadCSVFile();
 
-						ArrayList<ArrayList<String>> filedata = r.readinputfile(inputFile);
+						ArrayList<ArrayList<String>> filedata = r.readCSVFile(inputFile);
 						if (filedata.size() > 0 && filedata != null) {
 
 							MappingFile m = new MappingFile();

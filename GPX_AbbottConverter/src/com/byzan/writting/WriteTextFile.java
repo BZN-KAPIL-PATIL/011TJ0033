@@ -66,7 +66,7 @@ public class WriteTextFile implements PathConstant {
             bw.flush();
             isSuccess = true;
 
-            System.out.println(" Output file created successfully at: " + outputFile.getAbsolutePath());
+         //   System.out.println(" Output file created successfully at: " + outputFile.getAbsolutePath());
 
         } catch (IOException e) {
             e.printStackTrace();
